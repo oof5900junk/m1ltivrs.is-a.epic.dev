@@ -1,113 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>@m1ltivrsx</title>
   <meta charset="UTF-8" />
+  <title>@m1ltivrsx</title>
   <link rel="icon" href="yingyang.png" type="image/png" />
   <style>
     body {
+      margin: 0;
+      padding: 0;
       background: url('snow.gif') no-repeat center center fixed;
       background-size: cover;
+      font-family: 'Segoe UI', sans-serif;
       color: white;
-      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .profile {
+      margin-top: 100px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 15px;
       text-align: center;
-      padding-top: 50px;
+      width: 90%;
+      max-width: 500px;
     }
 
-    #pfp {
-      width: 150px;
+    .avatar {
+      width: 100px;
+      border-radius: 50%;
+      margin-bottom: 15px;
     }
 
-    .bounce {
-      animation: bounce 1s infinite;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-20px); }
-    }
-
-    .intro {
-      margin-top: 20px;
-      font-size: 1.2em;
-    }
-
-    .dev-stack {
-      margin-top: 10px;
+    .name {
+      font-size: 2em;
       font-weight: bold;
     }
 
     .description {
-      margin-top: 15px;
-      font-style: italic;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+      margin-top: 10px;
+      font-size: 1em;
+    }
+
+    .now-playing {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 10px;
+      font-size: 0.9em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .now-playing span {
+      white-space: nowrap;
     }
 
     audio {
-      margin: 20px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <img id="pfp" src="yingyang.png" alt="Yin Yang PFP" />
 
-  <div class="intro">
-    Welcome to the m1ltivrsx<br>
-    ops identity deployed.<br>
-    Saga begins
+  <div class="profile">
+    <img src="yingyang.png" alt="Avatar" class="avatar" />
+    <div class="name">@m1ltivrsx</div>
+    <div class="description">
+      Tactical deployments.  
+      HTML, CSS, JavaScript.  
+      Inspired by VOUCAN’s legacy—this saga is timestamped.
+    </div>
   </div>
 
-  <div class="dev-stack">
-    Developer – HTML – CSS – JavaScript
-  </div>
+  <!-- Hidden audio players -->
+  <audio id="track1" src="track1.mp3"></audio>
+  <audio id="track2" src="track2.mp3"></audio>
 
-  <div class="description">
-    This is my first large project. I've worked on a Minecraft knockoff that should be in my repositories.
+  <!-- Now Playing bar -->
+  <div class="now-playing">
+    <span>🎵 Now Playing:</span>
+    <span id="track-name">None</span>
+    <span id="track-time">– 0:00</span>
   </div>
-
-  <audio id="track1" controls src="track1.mp3"></audio>
-  <audio id="track2" controls src="track2.mp3"></audio>
 
   <script>
-    // Avatar bounce logic
-    const pfp = document.getElementById('pfp');
-    const tracks = [document.getElementById('track1'), document.getElementById('track2')];
+    const tracks = [
+      { id: 'track1', name: 'Track 1 – Sonic Entry' },
+      { id: 'track2', name: 'Track 2 – Tactical Pulse' }
+    ];
 
-    function updateBounce() {
-      const anyPlaying = tracks.some(track => !track.paused);
-      pfp.classList.toggle('bounce', anyPlaying);
-    }
+    const nameDisplay = document.getElementById('track-name');
+    const timeDisplay = document.getElementById('track-time');
 
     tracks.forEach(track => {
-      track.addEventListener('play', updateBounce);
-      track.addEventListener('pause', updateBounce);
-      track.addEventListener('ended', updateBounce);
+      const audio = document.getElementById(track.id);
+
+      audio.addEventListener('play', () => {
+        nameDisplay.textContent = track.name;
+      });
+
+      audio.addEventListener('pause', () => {
+        nameDisplay.textContent = 'Paused';
+      });
+
+      audio.addEventListener('ended', () => {
+        nameDisplay.textContent = 'None';
+        timeDisplay.textContent = '– 0:00';
+      });
+
+      audio.addEventListener('timeupdate', () => {
+        const minutes = Math.floor(audio.currentTime / 60);
+        const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+        timeDisplay.textContent = `– ${minutes}:${seconds}`;
+      });
     });
-
-    // Animated browser tab title
-    const titleText = "@m1ltivrsx";
-    let index = 0;
-    let direction = 1;
-
-    function animateTitle() {
-      document.title = titleText.slice(0, index);
-      index += direction;
-
-      if (index > titleText.length) {
-        direction = -1;
-        index = titleText.length;
-      } else if (index < 0) {
-        direction = 1;
-        index = 0;
-      }
-
-      setTimeout(animateTitle, 200);
-    }
-
-    animateTitle();
   </script>
+
 </body>
 </html>
 
