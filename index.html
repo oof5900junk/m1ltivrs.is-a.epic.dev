@@ -15,6 +15,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
     .profile {
       margin-top: 100px;
@@ -38,140 +39,197 @@
       margin-top: 10px;
       font-size: 1em;
     }
-    .now-playing {
+
+    .music-player {
       position: fixed;
       bottom: 0;
+      left: 0;
       width: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      padding: 10px;
-      font-size: 0.9em;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 14px 16px;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;
       gap: 10px;
+      align-items: center;
+      font-size: 0.95em;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.4);
     }
-    .now-playing span {
+    .track-info {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+    }
+    .track-info span {
       white-space: nowrap;
+      flex-shrink: 0;
     }
-    audio {
-      display: none;
+    #track-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 600px;
+      justify-content: center;
+    }
+    .controls button {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      font-size: 1.3rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .controls button:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.05);
+    }
+    .controls button:active {
+      transform: scale(0.95);
+    }
+    .play-pause {
+      width: 56px;
+      height: 56px;
+      font-size: 1.6rem;
+    }
+
+    /* Native player — full width, active */
+    #audioPlayer {
+      width: 100%;
+      max-width: 600px;
+      height: 42px;
     }
   </style>
 </head>
 <body>
+
   <div class="profile">
     <img src="yingyang.png" alt="Avatar" class="avatar" />
     <div class="name">@m1ltivrsx</div>
     <div class="description">
-      Tactical deployments.
-      HTML, CSS, JavaScript.
+      Tactical deployments.<br />
+      HTML, CSS, JavaScript.<br />
       Inspired by VOUCAN’s legacy—this saga is timestamped.
     </div>
   </div>
 
-  <!-- Hidden audio players -->
-  <audio id="track1" src="track1.mp3" preload="metadata"></audio>
-  <audio id="track2" src="track2.mp3" preload="metadata"></audio>
+  <!-- MUSIC PLAYER — EXACTLY MY LAYOUT -->
+  <div class="music-player">
+    <div class="track-info">
+      <span>Now Playing:</span>
+      <span ID="track-name">Track 1 – Sonic Entry</span>
+      <span ID="track-time">– 0:00</span>
+    </div>
 
-  <!-- Now Playing bar — EXACTLY YOUR ORIGINAL -->
-  <div class="now-playing">
-    <span>Now Playing:</span>
-    <span id="track-name">None</span>
-    <span id="track-time">– 0:00</span>
+    <div class="controls">
+      <button id="prevBtn" title="Previous">Prev</button>
+      <button id="rewindBtn" title="Rewind 10s">Rewind</button>
+      <button id="playPauseBtn" class="play-pause" title="Play">Play</button>
+      <button id="ffwdBtn" title="Fast-forward 10s">FF</button>
+      <button id="nextBtn" title="Next">Next</button>
+    </div>
+
+    <!-- Native player — will be loaded properly -->
+    <audio id="audioPlayer" controls></audio>
   </div>
 
   <script>
-    const tracks = [
-      { id: 'track1', name: 'Track 1 – Sonic Entry' },
-      { id: 'track2', name: 'Track 2 – Tactical Pulse' }
+    const playlist = [
+      { name: 'Track 1 – Sonic Entry',   src: 'track1.mp3' },
+      { name: 'Track 2 – Tactical Pulse',src: 'track2.mp3' }
     ];
-
     let currentIndex = 0;
-    let currentAudio = null;
+    let audio = null;
 
-    const nameDisplay = document.getElementById('track-name');
-    const timeDisplay = document.getElementById('track-time');
+    const trackNameEl  = document.getElementById('track-name');
+    const trackTimeEl  = document.getElementById('track-time');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn      = document.getElementById('prevBtn');
+    const nextBtn      = document.getElementById('nextBtn');
+    const rewindBtn    = document.getElementById('rewindBtn');
+    const ffwdBtn      = document.getElementById('ffwdBtn');
+    const nativePlayer = document.getElementById('audioPlayer');
 
-    // Load and play a track
-    const playTrack = (index) => {
-      currentIndex = index % tracks.length;
-      const track = tracks[currentIndex];
-      const audioElement = document.getElementById(track.id);
-
-      // Stop previous
-      if (currentAudio && currentAudio !== audioElement) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-
-      currentAudio = audioElement;
-      currentAudio.src = track.id + '.mp3'; // Ensure fresh load
-      currentAudio.load(); // CRITICAL: Forces browser to recognize file
-
-      nameDisplay.textContent = track.name;
-      timeDisplay.textContent = '– 0:00';
-
-      currentAudio.play().catch(() => {
-        // Mobile: require user tap first
-        document.body.addEventListener('click', unlockAudio, { once: true });
-      });
+    const formatTime = (sec) => {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
     };
 
-    // Update time
-    const updateTime = () => {
-      if (currentAudio) {
-        const minutes = Math.floor(currentAudio.currentTime / 60);
-        const seconds = Math.floor(currentAudio.currentTime % 60).toString().padStart(2, '0');
-        timeDisplay.textContent = `– ${minutes}:${seconds}`;
-      }
-    };
+    const loadTrack = (index) => {
+      currentIndex = (index + playlist.length) % playlist.length;
+      const track = playlist[currentIndex];
 
-    // Unlock audio on first user tap (mobile)
-    const unlockAudio = () => {
-      const test = new Audio();
-      test.play().catch(() => {});
-      if (currentAudio && currentAudio.paused) {
-        currentAudio.play();
-      }
-    };
+      if (audio) audio.pause();
 
-    // Attach events to ALL tracks
-    tracks.forEach((track, i) => {
-      const audio = document.getElementById(track.id);
+      audio = new Audio(track.src);
+      audio.preload = 'metadata';
 
-      audio.addEventListener('play', () => {
-        nameDisplay.textContent = track.name;
-      });
+      trackNameEl.textContent = track.name;
+      trackTimeEl.textContent = '– 0:00';
+      playPauseBtn.textContent = 'Play';
 
-      audio.addEventListener('pause', () => {
-        nameDisplay.textContent = 'Paused';
+      // FIX: Set src + load() on native player
+      nativePlayer.src = track.src;
+      nativePlayer.load();  // This activates the play button!
+
+      audio.addEventListener('timeupdate', () => {
+        trackTimeEl.textContent = `– ${formatTime(audio.currentTime)}`;
       });
 
       audio.addEventListener('ended', () => {
-        nameDisplay.textContent = 'None';
-        timeDisplay.textContent = '– 0:00';
-        playTrack((currentIndex + 1) % tracks.length); // Auto-next
+        playPauseBtn.textContent = 'Play';
+        loadNext();
       });
 
-      audio.addEventListener('timeupdate', updateTime);
+      audio.addEventListener('play', () => playPauseBtn.textContent = 'Pause');
+      audio.addEventListener('pause', () => playPauseBtn.textContent = 'Play');
 
-      // Click anywhere to play first track
-      document.body.addEventListener('click', () => {
-        if (!currentAudio || currentAudio.paused) {
-          playTrack(0);
-        }
-      }, { once: true });
-    });
+      // Sync native player
+      nativePlayer.addEventListener('play', () => playPauseBtn.textContent = 'Pause');
+      nativePlayer.addEventListener('pause', () => playPauseBtn.textContent = 'Play');
+    };
 
-    // Optional: Click "Now Playing" text to toggle play/pause
-    document.querySelector('.now-playing').addEventListener('click', () => {
-      if (currentAudio) {
-        currentAudio.paused ? currentAudio.play() : currentAudio.pause();
+    const togglePlayPause = () => {
+      if (audio.paused) {
+        audio.play().catch(() => nativePlayer.play());
+      } else {
+        audio.pause();
       }
-    });
+    };
 
-    // Start with first track ready
-    playTrack(0);
+    const loadPrev = () => loadTrack(currentIndex - 1);
+    const loadNext = () => loadTrack(currentIndex + 1);
+    const rewind = () => { if (audio) audio.currentTime = Math.max(0, audio.currentTime - 10); };
+    const ffwd   = () => { if (audio) audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); };
+
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    prevBtn.addEventListener('click', loadPrev);
+    nextBtn.addEventListener('click', loadNext);
+    rewindBtn.addEventListener('click', rewind);
+    ffwdBtn.addEventListener('click', ffwd);
+
+    // INITIAL LOAD — play button now active
+    loadTrack(0);
+
+    // Mobile unlock
+    document.body.addEventListener('click', function unlock() {
+      new Audio().play().catch(() => {});
+      document.body.removeEventListener('click', unlock);
+    }, { once: true });
   </script>
+
 </body>
 </html>
