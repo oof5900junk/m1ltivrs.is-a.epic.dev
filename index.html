@@ -38,29 +38,6 @@
       margin-top: 10px;
       font-size: 1em;
     }
-
-    /* Button Styles */
-    .btn {
-      background: rgba(255, 255, 255, 0.15);
-      border: none;
-      color: white;
-      padding: 12px 24px;
-      margin: 8px;
-      border-radius: 8px;
-      font-size: 1em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
-    .btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: translateY(-1px);
-    }
-    .btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
   </style>
 </head>
 <body>
@@ -72,46 +49,6 @@
       HTML, CSS, JavaScript.<br />
       Inspired by VOUCAN’s legacy—this saga is timestamped.
     </div>
-
-    <!-- Interactive Buttons with Click Sound -->
-    <button class="btn" data-sound="hover">Hover Me</button>
-    <button class="btn" data-sound="click">Click Me</button>
-    <button class="btn" data-sound="both">Both</button>
   </div>
-
-  <!-- Hidden Audio for Click Sound -->
-  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-quick-positive-click-3180.mp3" preload="auto"></audio>
-
-  <script>
-    // Play sound on hover or click
-    const clickSound = document.getElementById('clickSound');
-    const buttons = document.querySelectorAll('.btn');
-
-    buttons.forEach(btn => {
-      const trigger = btn.dataset.sound;
-
-      // Hover sound
-      if (trigger === 'hover' || trigger === 'both') {
-        btn.addEventListener('mouseenter', () => {
-          clickSound.currentTime = 0;
-          clickSound.play().catch(() => {});
-        });
-      }
-
-      // Click sound
-      if (trigger === 'click' || trigger === 'both') {
-        btn.addEventListener('click', () => {
-          clickSound.currentTime = 0;
-          clickSound.play().catch(() => {});
-        });
-      }
-    });
-
-    // Unlock audio on first user interaction (for mobile)
-    document.body.addEventListener('click', function unlockAudio() {
-      clickSound.play().then(() => clickSound.pause()).catch(() => {});
-      document.body.removeEventListener('click', unlockAudio);
-    }, { once: true });
-  </script>
 </body>
 </html>
