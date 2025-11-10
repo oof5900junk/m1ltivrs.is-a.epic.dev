@@ -21,19 +21,28 @@
     }
     .avatar { width: 100px; border-radius: 50%; margin-bottom: 15px; }
     .name { font-size: 2em; font-weight: bold; }
-    .description { margin-top: 10px; font-size: 1em; }
 
-    /* FULL-SIZE PLAYER BAR */
     .now-playing {
       position: fixed; bottom: 0; left: 0; width: 100%;
-      background: rgba(0,0,0,0.85); padding: 15px;
-      text-align: center; font-size: 1em;
+      background: rgba(0,0,0,0.9); padding: 20px;
+      text-align: center;
+    }
+    .now-playing h3 {
+      margin: 0 0 10px 0; font-size: 1.1em;
     }
     .now-playing audio {
-      width: 100%; height: 50px;
+      width: 100%; height: 50px; margin-top: 10px;
     }
-    .track-label {
-      margin-bottom: 8px; font-weight: bold;
+    .file-picker {
+      margin: 15px 0;
+      color: #0ff;
+      font-weight: bold;
+    }
+    input[type="file"] {
+      color: white;
+      background: rgba(255,255,255,0.1);
+      padding: 8px;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -49,22 +58,40 @@
     </div>
   </div>
 
-  <!-- FULL-SIZE, WORKING AUDIO PLAYER (NO JS NEEDED) -->
+  <!-- FULL-SIZE AUDIO PLAYER -->
   <div class="now-playing">
-    <div class="track-label">Now Playing: Track 1 – Sonic Entry</div>
-    <audio controls>
-      <source src="track1.mp3" type="audio/mpeg">
-      Your browser does not support audio.
-    </audio>
+    <h3>Now Playing: <span id="song-name">Choose a song below</span></h3>
 
-    <br><br>
+    <!-- FILE PICKER -->
+    <div class="file-picker">
+      <input type="file" id="audioFile" accept="audio/*">
+    </div>
 
-    <div class="track-label">Next: Track 2 – Tactical Pulse</div>
-    <audio controls>
-      <source src="track2.mp3" type="audio/mpeg">
+    <!-- THE ACTUAL PLAYER -->
+    <audio id="player" controls>
       Your browser does not support audio.
     </audio>
   </div>
+
+  <!-- NO JAVASCRIPT NEEDED? YES! BUT THIS TINY BIT MAKES IT EASY -->
+  <script>
+    // This runs ONLY to connect file picker → player
+    // If JS is off, user can still drag file into browser
+    document.getElementById('audioFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      const player = document.getElementById('player');
+      const name = document.getElementById('song-name');
+
+      player.src = url;
+      name.textContent = file.name;
+      player.play().catch(() => {
+        alert("Click Play to start!");
+      });
+    });
+  </script>
 
 </body>
 </html>
